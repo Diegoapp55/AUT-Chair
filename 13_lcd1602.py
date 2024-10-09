@@ -6,6 +6,8 @@
 #
 from time import sleep
 
+# Cambiandole cualquier cosa xD
+
 class Adafruit_CharLCD:
     # commands
     LCD_CLEARDISPLAY = 0x01
