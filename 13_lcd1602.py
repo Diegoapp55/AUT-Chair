@@ -5,8 +5,7 @@
 # LiquidCrystal - https://github.com/arduino/Arduino/blob/master/libraries/LiquidCrystal/LiquidCrystal.cpp
 #
 from time import sleep
-
-# Cambiandole cualquier cosa xD
+from gpiozero import DigitalOutputDevice
 
 class Adafruit_CharLCD:
     # commands
@@ -33,9 +32,6 @@ class Adafruit_CharLCD:
     # flags for display/cursor shift
     LCD_DISPLAYMOVE = 0x08
     LCD_CURSORMOVE = 0x00
-    # flags for display/cursor shift
-    LCD_DISPLAYMOVE = 0x08
-    LCD_CURSORMOVE = 0x00
     LCD_MOVERIGHT = 0x04
     LCD_MOVELEFT = 0x00
     # flags for function set
@@ -46,29 +42,30 @@ class Adafruit_CharLCD:
     LCD_5x10DOTS = 0x04
     LCD_5x8DOTS = 0x00
 
-    def __init__(self, pin_rs=27, pin_e=22, pins_db=[25, 24, 23, 18], GPIO =
+    def __init__(self, pin_rs=17, pin_e=27, pins_db=[5, 6, 13, 19], GPIO =
                 None):
         # Emulate the old behavior of using RPi.GPIO if we haven't been given
         # an explicit GPIO interface to use
-        if not GPIO:
-            import RPi.GPIO as GPIO
-            self.GPIO = GPIO
-        self.pin_rs = pin_rs
-        self.pin_e = pin_e
-        self.pins_db = pins_db
-        self.GPIO.setmode(GPIO.BCM)
-        self.GPIO.setup(self.pin_e, GPIO.OUT)
-        self.GPIO.setup(self.pin_rs, GPIO.OUT)
-        for pin in self.pins_db:
-            self.GPIO.setup(pin, GPIO.OUT)
+        # if not GPIO:
+        #     import RPi.GPIO as GPIO
+        #     self.GPIO = GPIO
+        self.pin_rs = DigitalOutputDevice(pin_rs)
+        self.pin_e = DigitalOutputDevice(pin_e)
+        self.pins_db = [DigitalOutputDevice(pin) for pin in pins_db] # Creates a DigitalOutputDevice object for every pin number of the digital outputs
+        # self.GPIO.setmode(GPIO.BCM)
+        # self.GPIO.setup(self.pin_e, GPIO.OUT)
+        # self.GPIO.setup(self.pin_rs, GPIO.OUT)
+        # for pin in self.pins_db:
+        #     self.GPIO.setup(pin, GPIO.OUT)
         self.write4bits(0x33) # initialization
         self.write4bits(0x32) # initialization
         self.write4bits(0x28) # 2 line 5x7 matrix
         self.write4bits(0x0C) # turn cursor off 0x0E to enable cursor
         self.write4bits(0x06) # shift cursor right
-        self.displaycontrol = self.LCD_DISPLAYON | self.LCD_CURSOROFF | self.LCD_BLINKOFF
-        self.displayfunction = self.LCD_4BITMODE | self.LCD_1LINE | self.LCD_5x8DOTS
-        self.displayfunction |= self.LCD_2LINE 
+        # The | operator mix the binary options to create the Instruction codes for the modes of operation 
+        self.displaycontrol = self.LCD_DISPLAYON | self.LCD_CURSOROFF | self.LCD_BLINKOFF #0000 0100
+        self.displayfunction = self.LCD_4BITMODE | self.LCD_1LINE | self.LCD_5x8DOTS # 0000 0000
+        self.displayfunction |= self.LCD_2LINE # 0000 1000
         """ Initialize to default text direction (for romance languages) """
         self.displaymode = self.LCD_ENTRYLEFT | self.LCD_ENTRYSHIFTDECREMENT
         self.write4bits(self.LCD_ENTRYMODESET | self.displaymode) # set the entry mode
@@ -78,7 +75,7 @@ class Adafruit_CharLCD:
         if (lines > 1):
             self.numlines = lines
             self.displayfunction |= self.LCD_2LINE
-        self.currline = 0
+            self.currline = 0 # Revisar si va dentro o fuera
 
     def home(self):
         self.write4bits(self.LCD_RETURNHOME) # set cursor position to zero
@@ -90,7 +87,7 @@ class Adafruit_CharLCD:
 
     def setCursor(self, col, row):
         self.row_offsets = [ 0x00, 0x40, 0x14, 0x54 ]
-        if ( row > self.numlines ):
+        if ( row >= self.numlines ):
             row = self.numlines - 1 # we count rows starting w/0
         self.write4bits(self.LCD_SETDDRAMADDR | (col + self.row_offsets[row]))
 
@@ -112,11 +109,6 @@ class Adafruit_CharLCD:
     def cursor(self):
         """ Cursor On """
         self.displaycontrol |= self.LCD_CURSORON
-        self.write4bits(self.LCD_DISPLAYCONTROL | self.displaycontrol)
-
-    def noBlink(self):
-        """ Turn on and off the blinking cursor """
-        self.displaycontrol &= ~self.LCD_BLINKON
         self.write4bits(self.LCD_DISPLAYCONTROL | self.displaycontrol)
 
     def noBlink(self):
@@ -155,31 +147,34 @@ class Adafruit_CharLCD:
     def write4bits(self, bits, char_mode=False):
         """ Send command to LCD """
         self.delayMicroseconds(1000) # 1000 microsecond sleep
-        bits = bin(bits)[2:].zfill(8)
-        self.GPIO.output(self.pin_rs, char_mode)
+        bits = bin(bits)[2:].zfill(8) 
+        self.pin_rs.value = char_mode # value is a property of DigitalOutputDevice from gpiozero to change either show the logical value of the GPIO pin
         for pin in self.pins_db:
-            self.GPIO.output(pin, False)
+                pin.off()
         for i in range(4):
             if bits[i] == "1":
-                self.GPIO.output(self.pins_db[::-1][i], True)
-            self.pulseEnable()
+                self.pins_db[::-1][i].on()
+        self.pulseEnable()
         for pin in self.pins_db:
-            self.GPIO.output(pin, False)
+            pin.off()
         for i in range(4,8):
             if bits[i] == "1":
-                self.GPIO.output(self.pins_db[::-1][i-4], True)
-            self.pulseEnable()
+                self.pins_db[::-1][i-4].on()
+        self.pulseEnable()
+
+        print(f"Escribiendo bits: {bits} - char_mode: {char_mode}") # For bitwise testing and get to know if the characters sent are ok or what is te problem
+
 
     def delayMicroseconds(self, microseconds):
         seconds = microseconds / float(1000000) # divide microseconds by 1 million for seconds
         sleep(seconds)
 
     def pulseEnable(self):
-        self.GPIO.output(self.pin_e, False)
+        self.pin_e.off()
         self.delayMicroseconds(1) # 1 microsecond pause - enable pulse must be > 450ns
-        self.GPIO.output(self.pin_e, True)
-        self.delayMicroseconds(1) # 1 microsecond pause - enable pulse must be > 450ns
-        self.GPIO.output(self.pin_e, False)
+        self.pin_e.on()
+        self.delayMicroseconds(1) # 1 micprint(f"Escribiendo bits: {bits} - char_mode: {char_mode}")rosecond pause - enable pulse must be > 450ns
+        self.pin_e.off()
         self.delayMicroseconds(1) # commands need > 37us to settle
 
     def message(self, text):
@@ -192,16 +187,24 @@ class Adafruit_CharLCD:
 
 def loop():
     lcd = Adafruit_CharLCD()
+    # lcd.begin(16, 2)
     while True:
         lcd.clear()
+        # lcd.write4bits(ord('1'),True)
+        # lcd.write4bits(ord('2'),True)
+        # lcd.write4bits(ord('3'),True)
+        # sleep(2)
+        # break
+
         lcd.message(" LCD 1602 Test \n123456789ABCDEF")
+        # lcd.write4bits(0x58, True)
+        # lcd.write4bits(0x44, True)
+        # lcd.clear()
+        # lcd.message(" IDUINO \nHello World ! :)")
         sleep(2)
-        lcd.clear()
-        lcd.message(" IDUINO \nHello World ! :)")
-        sleep(2)
-        lcd.clear()
-        lcd.message("Welcom to --->\n IDUINO.com")
-        sleep(2)
+        # lcd.clear()
+        # lcd.message("Welcome to --->\n IDUINO.com")
+        # sleep(2)
 
 if __name__ == '__main__':
     loop()
