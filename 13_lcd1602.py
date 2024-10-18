@@ -44,19 +44,9 @@ class Adafruit_CharLCD:
 
     def __init__(self, pin_rs=17, pin_e=27, pins_db=[5, 6, 13, 19], GPIO =
                 None):
-        # Emulate the old behavior of using RPi.GPIO if we haven't been given
-        # an explicit GPIO interface to use
-        # if not GPIO:
-        #     import RPi.GPIO as GPIO
-        #     self.GPIO = GPIO
         self.pin_rs = DigitalOutputDevice(pin_rs)
         self.pin_e = DigitalOutputDevice(pin_e)
         self.pins_db = [DigitalOutputDevice(pin) for pin in pins_db] # Creates a DigitalOutputDevice object for every pin number of the digital outputs
-        # self.GPIO.setmode(GPIO.BCM)
-        # self.GPIO.setup(self.pin_e, GPIO.OUT)
-        # self.GPIO.setup(self.pin_rs, GPIO.OUT)
-        # for pin in self.pins_db:
-        #     self.GPIO.setup(pin, GPIO.OUT)
         self.write4bits(0x33) # initialization
         self.write4bits(0x32) # initialization
         self.write4bits(0x28) # 2 line 5x7 matrix
@@ -75,7 +65,7 @@ class Adafruit_CharLCD:
         if (lines > 1):
             self.numlines = lines
             self.displayfunction |= self.LCD_2LINE
-            self.currline = 0 # Revisar si va dentro o fuera
+            self.currline = 0
 
     def home(self):
         self.write4bits(self.LCD_RETURNHOME) # set cursor position to zero
@@ -162,9 +152,6 @@ class Adafruit_CharLCD:
                 self.pins_db[::-1][i-4].on()
         self.pulseEnable()
 
-        print(f"Escribiendo bits: {bits} - char_mode: {char_mode}") # For bitwise testing and get to know if the characters sent are ok or what is te problem
-
-
     def delayMicroseconds(self, microseconds):
         seconds = microseconds / float(1000000) # divide microseconds by 1 million for seconds
         sleep(seconds)
@@ -173,7 +160,7 @@ class Adafruit_CharLCD:
         self.pin_e.off()
         self.delayMicroseconds(1) # 1 microsecond pause - enable pulse must be > 450ns
         self.pin_e.on()
-        self.delayMicroseconds(1) # 1 micprint(f"Escribiendo bits: {bits} - char_mode: {char_mode}")rosecond pause - enable pulse must be > 450ns
+        self.delayMicroseconds(1) # 1 microsecond pause - enable pulse must be > 450ns
         self.pin_e.off()
         self.delayMicroseconds(1) # commands need > 37us to settle
 
@@ -190,21 +177,11 @@ def loop():
     # lcd.begin(16, 2)
     while True:
         lcd.clear()
-        # lcd.write4bits(ord('1'),True)
-        # lcd.write4bits(ord('2'),True)
-        # lcd.write4bits(ord('3'),True)
-        # sleep(2)
-        # break
-
         lcd.message(" LCD 1602 Test \n123456789ABCDEF")
-        # lcd.write4bits(0x58, True)
-        # lcd.write4bits(0x44, True)
-        # lcd.clear()
-        # lcd.message(" IDUINO \nHello World ! :)")
         sleep(2)
-        # lcd.clear()
-        # lcd.message("Welcome to --->\n IDUINO.com")
-        # sleep(2)
+        lcd.clear()
+        lcd.message("   AUT Chair\n      RUB")
+        sleep(2)
 
 if __name__ == '__main__':
     loop()

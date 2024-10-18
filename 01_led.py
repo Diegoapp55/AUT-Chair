@@ -10,8 +10,9 @@ def loop():
         led.off()			# turn OFF LED
         sleep(1)			# wait 1 second
 
-def destroy():
+def destroy(): #Turns off the LED and releases the GPIO pin after the program ends
     led.off()
+    led.close()
     
 if __name__ == '__main__': # Program start from here
     try:

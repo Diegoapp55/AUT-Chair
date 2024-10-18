@@ -4,15 +4,15 @@ from signal import pause
 button = Button(27)
 led = LED(17)
 
-def led_on():
+def led_on(): # Function that runs when the button is pressed to print its status
     print("LED on")
 
-def led_off():
+def led_off(): # Function that runs when the button is released to print its status
     print("LED off")
 
 def loop():
     while True:
-        # Here we can use the library's methods for the Button object:
+        # We can use the library's methods for the Button object and call the functions for turning on and off the LED:
         button.when_pressed = led_on
         button.when_released = led_off
 
@@ -20,7 +20,7 @@ def loop():
 
         pause() # Used to avoid overloading the RPi CPU with continuous data been checked from the button status
 
-def destroy():
+def destroy(): # Releases the GPIO pins after the program ends
     button.close()
     led.close()
 
