@@ -10,11 +10,22 @@ def led_on():
 def led_off():
     print("LED off")
 
-# Here we can use the library's methods for the Button object:
+def loop():
+    while True:
+        # Here we can use the library's methods for the Button object:
+        button.when_pressed = led_on
+        button.when_released = led_off
 
-button.when_pressed = led_on
-button.when_released = led_off
+        led.source = button # The source attribute of LED class receives te signal from the button to switch between on and off
 
-led.source = button # The source attribute of LED class receives te signal from the button to switch between on and off
+        pause() # Used to avoid overloading the RPi CPU with continuous data been checked from the button status
 
-pause() # Used to avoid overloading the RPi CPU with continuous data been checked from the button status
+def destroy():
+    button.close()
+    led.close()
+
+if __name__ == '__main__': # Program start from here
+    try:
+        loop()
+    except KeyboardInterrupt: # When 'Ctrl+C' is pressed, the childprogram destroy() will be executed.
+        destroy()
