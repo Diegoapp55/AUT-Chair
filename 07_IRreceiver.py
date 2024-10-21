@@ -13,13 +13,6 @@ def cont():
     count +=1
     print("Received infrared. cnt=", count)
 
-"""def loop():
-    while True:
-        IRrec.when_activated=cont
-        #print(IRrec.is_active)
-        pause()
-        #time.sleep(0.5)"""
-        
 
 if __name__ == '__main__': # Program start from here
     try:
