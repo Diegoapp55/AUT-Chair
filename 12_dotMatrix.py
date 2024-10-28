@@ -10,9 +10,9 @@ from luma.core.legacy.font import proportional, CP437_FONT
 def output(n, block_orientation, rotate, inreverse,flag):
     # create matrix device
     serial = spi(port=0, device=0, gpio=noop())
-    device = max7219(serial, cascaded=2, block_orientation=block_orientation,
-                     rotate=rotate or 0, blocks_arranged_in_reverse_order=inreverse)
-    # device = max7219(serial)
+    # device = max7219(serial, cascaded, block_orientation=block_orientation,
+    #                  rotate=rotate or 0, blocks_arranged_in_reverse_order=inreverse)
+    device = max7219(serial)
     while flag:
         text=input("Write your text:" )
         show_message(device, text, fill="white", font=proportional(CP437_FONT), scroll_delay=0.04)
