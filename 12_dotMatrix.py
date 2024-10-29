@@ -13,6 +13,7 @@ def output(n, block_orientation, rotate, inreverse,flag):
     # device = max7219(serial, cascaded, block_orientation=block_orientation,
     #                  rotate=rotate or 0, blocks_arranged_in_reverse_order=inreverse)
     device = max7219(serial)
+    
     while flag:
         text=input("Write your text:" )
         show_message(device, text, fill="white", font=proportional(CP437_FONT), scroll_delay=0.04)
