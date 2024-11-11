@@ -1,5 +1,6 @@
 from gpiozero import RGBLED # Imports the dedicated class RGBLED from the library, to use its methods
 from colorzero import Color # Required to use the color property of RGBLED objects
+import keyboard
 import time
 
 # Initialize an RGB LED with pins connected to GPIO 17 (red), 27 (green), and 22 (blue)
@@ -31,10 +32,23 @@ def RGB(R, G, B):
     B_out = B / 255  # Scale the blue value
     return (R_out, G_out, B_out)
 
+def ask_number():
+    try:
+        NumberOfColors = int(input('How many colors you want to see?:'))
+    except (ValueError, IndexError):
+        # If there's an error in the input format, raise a ValueError with a clear message
+        print("--> Invalid input. Please make sure your input is a number")
+        ask_number()
+        return None
+    return NumberOfColors
+
 # Main loop to collect RGB inputs and cycle through the colors
-def loop():
-    # Collect 6 RGB color codes from the user
-    for i in range(6):
+def loop(): 
+    # Ask the user for the desired number of colors
+    NumberOfColors = ask_number()
+    ended = False
+    
+    for i in range(NumberOfColors):
         while True:
             RGB_usr = input(f'Insert {i+1} RGB color code (in the R,G,B form):')
             R, G, B, IsValid = process_input(RGB_usr)  # Process the input
@@ -42,12 +56,19 @@ def loop():
                 colors.append([R, G, B])  # Store the color in the list
                 break
     
+    print("Press 'E' to end the program...")
+    
     # Continuously cycle through the input colors
-    while True:
+    while ended == False:
         for j in colors:
             # Set the LED to the next color
             led.color = RGB(j[0], j[1], j[2])
             time.sleep(1)  # Wait for 1 second before switching to the next color
+            if keyboard.is_pressed('e'):  # Verifica si se presionó la tecla 'e'
+                ended = True
+                break
+    print("\nEnded")
+    led.close()  # Release the GPIO pins to avoid errors
 
 # Program entry point
 if __name__ == '__main__':
