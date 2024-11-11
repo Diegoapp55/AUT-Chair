@@ -10,7 +10,7 @@ def output(n, block_orientation, rotate, inreverse, flag):
     # Create a serial interface for the LED matrix
     serial = spi(port=0, device=0, gpio=noop())
     # Initialize the LED matrix device
-    device = max7219(serial)
+    device = max7219(serial,block_orientation=0,rotate=1)
 
     while flag:
         # Prompt user for text input

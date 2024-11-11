@@ -1,19 +1,40 @@
 import time
 from gpiozero import OutputDevice
 
-# Define output pins for the shift register
-SDI = OutputDevice(17)  # Serial Data Input
-RCLK = OutputDevice(27)  # Register Clock
-SRCLK = OutputDevice(22)  # Shift Register Clock
-
+# Dictionary to obtain the hexadecimal repression of Decimal numbers
 #=============== LED Mode Define ================
 # The codes in Hexagesimal form below indicate the segments of
 # the display that are turned on. Where the LSB means Segment A
 # and the MSB means Decimal Point (DP). For example: 0x4f means
 # 0 1 0 0 1 1 1 1, i.e. A, B, C, D and G are on, and number 3 is
 # shown on the display.
-segCode = [0x3f, 0x06, 0x5b, 0x4f, 0x66, 0x6d, 0x7d, 0x07, 
-           0x7f, 0x6f, 0x77, 0x7c, 0x39, 0x5e, 0x79, 0x71, 0x80]  # Segment patterns
+HexaRepre = {
+    0x3f:0,
+    0x06:1,
+    0x5b:2, 
+    0x4f:3,
+    0x66:4,
+    0x6d:5,
+    0x7d:6,
+    0x07:7,
+    0x7f:8,
+    0x6f:9,
+    0x77:"A",  # 10
+    0x7c:"B",  # 11
+    0x39:"C",  # 12
+    0x5e:"D",  # 13
+    0x79:"E",  # 14
+    0x71:"F",  # 15
+    0x80:"DP"   # DecimalPoint
+}
+
+# Define output pins for the shift register
+SDI = OutputDevice(17)  # Serial Data Input
+RCLK = OutputDevice(27)  # Register Clock
+SRCLK = OutputDevice(22)  # Shift Register Clock
+
+# Create a list of segment codes from the keys of HexaRepre
+segCode = list(HexaRepre.keys())  # Segment patterns as a list of hex values
 RESET = [0x00] * 16  # Reset state for display
 #=================================================
 

@@ -2,6 +2,25 @@ import time
 from gpiozero import OutputDevice, Button
 import random
 
+
+# Dictionary to obtain the hexadecimal repression of Decimal numbers
+#=============== LED Mode Define ================
+# The codes in Hexagesimal form below indicate the segments of
+# the display that are turned on. Where the LSB means Segment A
+# and the MSB means Decimal Point (DP). For example: 0x4f means
+# 0 1 0 0 1 1 1 1, i.e. A, B, C, D and G are on, and number 3 is
+# shown on the display.
+HexaRepre = {
+    #0x3f:0,
+    0x06:1,
+    0x5b:2, 
+    0x4f:3,
+    0x66:4,
+    0x6d:5,
+    0x7d:6
+}
+
+
 # Define output pins for the shift register
 SDI = OutputDevice(17)  # Serial Data Input
 RCLK = OutputDevice(27)  # Register Clock
@@ -13,7 +32,7 @@ button = Button(6)
 # and the MSB means Decimal Point (DP). For example: 0x4f means
 # 0 1 0 0 1 1 1 1, i.e. A, B, C, D and G are on, and number 3 is
 # shown on the display.
-segCode = [0x06, 0x5b, 0x4f, 0x66, 0x6d, 0x7d]  # Segment patterns
+segCode = list(HexaRepre.keys())  # Segment patterns
 ruletcode = [0x01, 0x02, 0x04, 0x08, 0x10, 0x20]  #Rulet pattern
 RESET = [0x00] * 16  # Reset state for display
 
@@ -40,6 +59,7 @@ def loop(code, type=False):
     # Main loop to display numbers or sequence
     if type:
         number = random.randint(0, 5)  # Random number for display
+        print(number+1)
         hc595_op(code[number])  # Display the random number
     else:
         for i in range(len(code)):
