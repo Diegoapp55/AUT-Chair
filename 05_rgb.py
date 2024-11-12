@@ -64,7 +64,7 @@ def loop():
             # Set the LED to the next color
             led.color = RGB(j[0], j[1], j[2])
             time.sleep(1)  # Wait for 1 second before switching to the next color
-            if keyboard.is_pressed('e'):  # Verifica si se presionó la tecla 'e'
+            if input("press 'E' to end the program...").lower() == 'e':  # Verifica si se presionó la tecla 'e'
                 ended = True
                 break
     print("\nEnded")
