@@ -56,8 +56,6 @@ def loop():
                 colors.append([R, G, B])  # Store the color in the list
                 break
     
-    print("Press 'E' to end the program...")
-    
     # Continuously cycle through the input colors
     while ended == False:
         for j in colors:
